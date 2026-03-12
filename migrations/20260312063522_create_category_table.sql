@@ -1,0 +1,18 @@
+-- 20260312063522_create_category_table.sql
+-- +goose Up
+CREATE TABLE categories (
+       ID SERIAL PRIMARY KEY,
+
+       Name VARCHAR(50) NOT NULL,
+
+       Sort INT NOT NULL DEFAULT 0,
+
+       Status SMALLINT NOT NULL DEFAULT 0,
+
+       CreatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+       UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- +goose Down

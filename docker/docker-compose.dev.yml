@@ -1,0 +1,30 @@
+name: gopher-takeout-dev
+# 文件位置: /home/singdile/Work/GopherTakeout/docker-compose.yml
+# ** 维护指令
+# | 动作 | 命令 | 备注 |
+# |------+------+------|
+# | 启动 | ~docker compose up -d~ | 后台运行，自动初始化 |
+# | 停止 | ~docker compose stop~ | 暂停，数据保留 |
+# | 重置 | ~docker compose down && docker compose up -d~ | **销毁并按最新脚本重建** |
+# | 日志 | ~docker compose logs -f~ | 查看 SQL 执行是否报错 |
+#
+services: #定义要启动的容器
+  postgres: #定义的服务的名称
+    image: postgres:16-alpine #使用的镜像
+    container_name: gopher_takeout_db #运行的容器的名称
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: go_takeout
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data #数据存放的地方
+      - ../migrations:/docker-entrypoint-initdb.d:ro #实现的迁移，数据库第一次启动且数据目录为空的时候会执行
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_dev_data:

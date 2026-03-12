@@ -1,0 +1,2 @@
+database:
+  dsn: "host=localhost user=postgres password=123456 dbname=gopher_takeout_test port=5434 sslmode=disable TimeZone=Asia/Shanghai"

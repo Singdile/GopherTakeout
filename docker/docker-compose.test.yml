@@ -1,0 +1,21 @@
+name: gopher-takeout-test
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gopher_takeout_test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: gopher_takeout_test
+    ports:
+      - "5434:5432"  # 宿主机 5434，容器内 5432
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data #存储命令，地址
+      - ../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_test_data:

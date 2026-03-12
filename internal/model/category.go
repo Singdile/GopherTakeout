@@ -11,7 +11,7 @@ import "time"
 // UpdatedAt 更新时间
 
 type Category struct {
-	ID        int       `json:"id"`
+	ID        int       `json:"id"` //大写开头，可导出，JSON可序列化
 	Name      string    `json:"name"`
 	Sort      int       `json:"sort"`
 	Status    int       `json:"status"`

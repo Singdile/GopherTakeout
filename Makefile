@@ -1,61 +1,48 @@
-.PHONY: run build test test-unit test-integration test-cover lint fmt migrate-up migrate-down db-reset clean help
+#定义变量
+DB_URL_TEST="user=postgres password=123456 dbname=takeout_test port=5434 sslmode=disable"
+MIGRATIONS_DIR=./migrations
 
-APP_NAME=GopherTakeout
-MAIN_PATH=./cmd/server
-BUILD_DIR=./bin
+#定义下列的名称为动作名
+.PHONY: dev-up dev-down dev-logs dev-reset test-up test-down test-logs test-reset dev-psql test-psql
 
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GORUN=$(GOCMD) run
-GOTEST=$(GOCMD) test
-GOFMT=gofmt
-GOLINT=golangci-lint
+# ============================================
+# Docker Database Commands
+# ============================================
+# Development database
+dev-up:
+	docker compose -f docker/docker-compose.dev.yml up -d
+	@echo "Development database started on port 5433"
+dev-down:
+	docker compose -f docker/docker-compose.dev.yml down
+dev-logs:
+	docker compose -f docker/docker-compose.dev.yml logs -f
+dev-reset:
+	docker compose -f docker/docker-compose.dev.yml down -v
+	docker compose -f docker/docker-compose.dev.yml up -d
 
-.DEFAULT_GOAL := help
+# Test database (port 5433)
+test-up:
+	docker compose -f docker/docker-compose.test.yml up -d
+	@echo "Test database started on port 5434"
+test-down:
+	docker compose -f docker/docker-compose.test.yml down
+test-logs:
+	docker compose -f docker/docker-compose.test.yml logs -f
+test-reset:
+	docker compose -f docker/docker-compose.test.yml down -v
+	docker compose -f docker/docker-compose.test.yml up -d
 
-run:
-	$(GORUN) $(MAIN_PATH)/main.go
+# Interactive database access
+dev-psql:
+	docker exec -it gopher_takeout_db psql -U postgres -d go_takeout
 
-build:
-	$(GOBUILD) -o $(BUILD_DIR)/$(APP_NAME) $(MAIN_PATH)
+test-psql:
+	docker exec -it gopher_takeout_test psql -U postgres -d gopher_takeout_test
 
-test:
-	$(GOTEST) -v ./...
-
-test-unit:
-	$(GOTEST) -v -short ./...
-
-test-integration:
-	$(GOTEST) -v ./test/integration/...
-
-test-cover:
-	$(GOTEST) -coverprofile=coverage.out ./...
-	$(GOCMD) tool cover -html=coverage.out -o coverage.html
-
-lint:
-	$(GOLINT) run ./...
-
-fmt:
-	$(GOFMT) -s -w .
-
-migrate-up:
-	@echo "Run: psql -U postgres -d gopher_takeout -f migrations/001_init.sql"
-
-migrate-down:
-	@echo "Please rollback migrations manually"
-
-db-reset:
-	@echo "Please reset database manually"
-
-clean:
-	rm -rf $(BUILD_DIR)
-	rm -f coverage.out coverage.html
-
-deps:
-	$(GOCMD) mod download
-	$(GOCMD) mod tidy
-
-help:
-	@echo "GopherTakeout - Makefile Commands"
-	@echo ""
-	@sed -n 's/^##//p' $(MAKEFILE_LIST) | column -t -s ':' | sed -e 's/^/ /'
+# Both databases
+db-up: dev-up test-up
+	@echo "All databases started"
+db-down: dev-down test-down
+	@echo "All databases stopped"
+db-reset: dev-reset test-reset
+	@echo "All databases reset"

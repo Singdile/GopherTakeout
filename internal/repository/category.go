@@ -1,9 +1,24 @@
 package repository
 
+import (
+	"context"
+
+	"github.com/singdile/GopherTakeout/internal/model"
+)
+
 type CategoryRepository interface {
-	FindAll() ([]interface{}, error)
-	FindByID(id int) (interface{}, error)
-	Create(category interface{}) error
-	Update(category interface{}) error
-	Delete(id int) error
+	//查找所有菜品类型
+	FindAll(ctx context.Context) ([]model.Category, error)
+
+	//通过ID查找菜品类型
+	FindByID(ctx context.Context, id int) (*model.Category, error)
+
+	//创造新的菜品类型
+	Create(ctx context.Context, category *model.Category) error
+
+	//更新菜品类型
+	Update(ctx context.Context, category *model.Category) error
+
+	//删除菜品类型
+	Delete(ctx context.Context, id int) error
 }
