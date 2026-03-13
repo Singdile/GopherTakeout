@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/singdile/GopherTakeout/internal/model"
-	"github.com/singdile/GopherTakeout/pkg/database"
 )
 
 // TODO: 实现接口，编写Create的测试
@@ -16,15 +16,20 @@ type categoryRepository struct {
 }
 
 // 构造categoryRepository实例
-func (c *categoryRepository) NewCategoryRepository() categoryRepository {
-	//建立数据连接
-	pool, err := database.NewPostgresDB()
+func NewCategoryRepository(db *pgxpool.Pool) *categoryRepository {
+	return &categoryRepository{
+		db: db,
+	}
 }
 
+// 增添新的菜品类型
 func (c *categoryRepository) Create(ctx context.Context, category *model.Category) error {
-	_, err := c.db.Exec(ctx, "INSERT INTO categories (name,sort,status,createdat,updatedat) VALUES ($1,$2,$3,$4,$5) RETURNING id", category.Name, category.Sort, category.Status, category.CreatedAt, category.UpdatedAt)
-	if err != nil {
-		return err
+	//验证名称是否为空
+	if category.Name == "" {
+		return errors.New("Category name cannot be empty") //返回错误信息
 	}
+
+	_, err := c.db.Exec(ctx, "INSERT INTO categories (name,sort,status) VALUES ($1,$2,$3) RETURNING id", category.Name, category.Sort, category.Status)
+
 	return err
 }
