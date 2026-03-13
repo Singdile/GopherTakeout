@@ -33,3 +33,23 @@ func (c *categoryRepository) Create(ctx context.Context, category *model.Categor
 
 	return err
 }
+
+// 按照ID查询菜品类型
+func (c *categoryRepository) FindByID(ctx context.Context, id int) (*model.Category, error) {
+	//验证id是否合法
+	if id < 0 {
+		return nil, errors.New("Category id cannot be negative.")
+	}
+
+	//要返回的类型
+	var category model.Category
+
+	//查询数据并赋值
+	err := c.db.QueryRow(ctx, "SELECT * FROM categories WHERE id=$1", id).Scan(&category.ID, &category.Name, &category.Sort, &category.Status, &category.CreatedAt, &category.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &category, nil
+}

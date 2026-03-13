@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,6 +23,9 @@ func NewTestDB(t *testing.T) *pgxpool.Pool {
 		t.Fatalf("failed to connect to test database: %v", err)
 	}
 	//当前测试结束时执行
-	t.Cleanup(func() { pool.Close() })
+	t.Cleanup(func() {
+		pool.Exec(context.Background(), "TRUNCATE categories RESTART IDENTITY CASCADE;")
+		pool.Close()
+	})
 	return pool
 }
