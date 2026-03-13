@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
 	"fmt"
@@ -8,26 +8,35 @@ import (
 )
 
 // Config结构体与yaml的配置结构对应
+// Server 表示程序后台
+// Database 表示数据库
 type Config struct {
-	Server struct {
-		Port int
-		Name string
-	}
+	Server   ServerConfig   `mapstructre:"server"`
+	Database DatabaseConfig `mapstructre:"database"`
+}
 
-	Database struct {
-		DSN string
-	}
+type ServerConfig struct {
+	Port int
+	Name string
+}
+
+type DatabaseConfig struct {
+	DSN string
 }
 
 // 实例化一个配置结构体
 var AppConfig Config
 
+// 根据环境变量，初始化配置
 func InitConfig() {
 	//获取当前的环境，默认为dev
 	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "dev"
 	}
+
+	//切换到项目的根目录下面
+	Init()
 
 	//读取基本配置文件
 	viper.SetConfigName("config")
@@ -50,4 +59,18 @@ func InitConfig() {
 	}
 
 	fmt.Printf("当前运行环境: [%s], 服务器端口: [%d]\n", env, AppConfig.Server.Port)
+}
+
+// 将目录切换到项目的根目录下去
+func Init() {
+	for range 10 {
+		if _, err := os.Stat("go.mod"); err == nil {
+			// 找到 go.mod
+			return
+		}
+		//没找到，往上走一层
+		if err := os.Chdir(".."); err != nil {
+			panic("无法切换目录:" + err.Error())
+		}
+	}
 }

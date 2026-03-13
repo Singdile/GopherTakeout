@@ -1,10 +1,10 @@
 package test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/singdile/GopherTakeout/pkg/config"
 	"github.com/singdile/GopherTakeout/pkg/database"
 )
 
@@ -12,13 +12,12 @@ import (
 func NewTestDB(t *testing.T) *pgxpool.Pool {
 	t.Helper() //标记为测试辅助函数,如果该函数内部报错，报错信息会指向调用NewTestDB的地方
 
-	//获取环境变量关于数据库DSN
-	dsn := os.Getenv("TEST_DB_DSN")
-	if dsn == "" {
-		dsn = "host=localhost user=postgres password=123456 dbname=gopher_takeout_test port=5434 sslmode=disable"
-	}
+	//设置测试环境下的环境变量
+	t.Setenv("APP_ENV", "test")
 
-	pool, err := database.NewPostgresDB(dsn)
+	//初始化配置
+	config.InitConfig()
+	pool, err := database.NewPostgresDB(config.AppConfig.Database.DSN)
 	if err != nil {
 		t.Fatalf("failed to connect to test database: %v", err)
 	}
